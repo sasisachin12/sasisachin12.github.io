@@ -122,15 +122,7 @@
             return '<span style="color: red; font-weight: normal;">Missing Ingredient!</span>';
         }
 
-        // --- Function to set sample cookies (for demonstration) ---
-        function setSampleCookies() {
-            // Sample User Name cookie
-            document.cookie = "user_name=Chef_Gordon; max-age=3600; path=/";
-            
-            // Sample Session ID cookie
-            document.cookie = "session_data=Batch_ID-7734552210; path=/";
-        }
-
+        
         // --- Main function to read and update the display ---
         function readAndDisplayCookies() {
             const userName = getCookie('user_name');
@@ -151,8 +143,7 @@
         }
         
         // --- Execution ---
-        // 1. Set the cookies first
-        setSampleCookies();
+      
 
         // 2. Read and display the newly set cookies
         readAndDisplayCookies();
