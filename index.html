@@ -1,46 +1,162 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyApplication</title>
-    <link type="text/css" rel="stylesheet" href="styles.css">
-
-</head>
-<body style="background-color: #ffd500;">
-
-<h1>Current Cookies</h1>
-<div id="cookieDisplay">
-    No cookies found or enabled.
-</div>
-
-<script>
-    function displayCookies() {
-        const cookies = document.cookie;
-        const cookieDisplayDiv = document.getElementById('cookieDisplay');
-
-        if (cookies) {
-            // Split cookies into individual key-value pairs
-            const cookieArray = cookies.split(';');
-            let cookieHtml = '<ul>';
-            cookieArray.forEach(cookie => {
-                const trimmedCookie = cookie.trim();
-                if (trimmedCookie) {
-                    cookieHtml += `<li>${trimmedCookie}</li>`;
-                }
-            });
-            cookieHtml += '</ul>';
-            cookieDisplayDiv.innerHTML = cookieHtml;
-        } else {
-            cookieDisplayDiv.innerHTML = 'No cookies found for this domain.';
+    <title>Gourmet Session Details</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: #f7f3e8; /* Light parchment/cream background */
+            color: #4a4a4a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-    }
 
-    // Call the function when the page loads
-    window.onload = displayCookies;
-</script>
+        /* Recipe Card Container */
+        .recipe-card {
+            width: 100%;
+            max-width: 650px;
+            background-color: #ffffff;
+            border: 1px solid #d4c098;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            text-align: center;
+        }
 
+        /* Header Styling */
+        .recipe-card h1 {
+            font-family: 'Playfair Display', serif; /* Use a sophisticated font */
+            color: #8b4513; /* Earthy brown for food theme */
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            border-bottom: 3px double #d4c098;
+            padding-bottom: 10px;
+        }
+        .recipe-card p.subtitle {
+            font-style: italic;
+            color: #a0522d;
+            margin-bottom: 30px;
+        }
+
+        /* Ingredient/Data List Styling */
+        .ingredients-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            border: 1px dashed #d4c098;
+            padding: 20px;
+            background-color: #fffaf0; /* Slightly off-white for the list area */
+            border-radius: 6px;
+        }
+        .ingredients-list li {
+            font-size: 1.1em;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dotted #e0e0e0;
+        }
+        .ingredients-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Key and Value styling */
+        .ingredient-key {
+            font-weight: bold;
+            color: #8b4513;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .ingredient-value {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #2f4f4f;
+            word-break: break-all;
+        }
+        
+        /* Footer/Note */
+        .footer-note {
+            margin-top: 30px;
+            font-size: 0.85em;
+            color: #a9a9a9;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="recipe-card">
+        <h1>🍽️ Session Recipe: "The Cookie Batch"</h1>
+        <p class="subtitle">The required ingredients for your perfect browsing session.</p>
+
+        <ul id="cookieDisplay" class="ingredients-list">
+            <li>Checking the pantry...</li>
+        </ul>
+
+        <div class="footer-note">
+            * This page sets and reads temporary, client-side session data using JavaScript.
+        </div>
+    </div>
+
+    <script>
+        // --- Utility Function to get a specific cookie value ---
+        function getCookie(name) {
+            const nameEQ = encodeURIComponent(name) + "=";
+            const ca = document.cookie.split(';');
+
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i].trimStart(); 
+                if (c.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(c.substring(nameEQ.length, c.length));
+                }
+            }
+            return '<span style="color: red; font-weight: normal;">Missing Ingredient!</span>';
+        }
+
+        // --- Function to set sample cookies (for demonstration) ---
+        function setSampleCookies() {
+            // Sample User Name cookie
+            document.cookie = "user_name=Chef_Gordon; max-age=3600; path=/";
+            
+            // Sample Session ID cookie
+            document.cookie = "session_data=Batch_ID-7734552210; path=/";
+        }
+
+        // --- Main function to read and update the display ---
+        function readAndDisplayCookies() {
+            const userName = getCookie('user_name');
+            const sessionId = getCookie('session_data'); // Using a more generic name
+
+            const displayElement = document.getElementById('cookieDisplay');
+            
+            displayElement.innerHTML = `
+                <li>
+                    <span class="ingredient-key">User Name:</span> 
+                    <span class="ingredient-value">${userName}</span>
+                </li>
+                <li>
+                    <span class="ingredient-key">Session ID:</span> 
+                    <span class="ingredient-value">${sessionId}</span>
+                </li>
+            `;
+        }
+        
+        // --- Execution ---
+        // 1. Set the cookies first
+        setSampleCookies();
+
+        // 2. Read and display the newly set cookies
+        readAndDisplayCookies();
+    </script>
 
 </body>
 </html>
