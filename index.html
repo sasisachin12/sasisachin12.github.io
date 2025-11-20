@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gourmet Session Details</title>
+    <title>Validated Session Data Viewer</title>
     <style>
         /* Base styles */
         body {
             font-family: 'Georgia', serif;
             margin: 0;
             padding: 40px 20px;
-            background-color: #f7f3e8; /* Light parchment/cream background */
+            background-color: #f7f3e8;
             color: #4a4a4a;
             display: flex;
             justify-content: center;
@@ -28,21 +28,48 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
             padding: 30px;
             text-align: center;
+            transition: all 0.5s ease;
+        }
+
+        /* Styling for EXPIRED state */
+        .recipe-card.expired {
+            background-color: #fff0f0; /* Very light red */
+            border-color: #cc0000;
+            box-shadow: 0 10px 25px rgba(204, 0, 0, 0.5);
         }
 
         /* Header Styling */
         .recipe-card h1 {
-            font-family: 'Playfair Display', serif; /* Use a sophisticated font */
-            color: #8b4513; /* Earthy brown for food theme */
+            font-family: 'Playfair Display', serif;
+            color: #8b4513;
             font-size: 2.5em;
             margin-bottom: 5px;
             border-bottom: 3px double #d4c098;
             padding-bottom: 10px;
         }
-        .recipe-card p.subtitle {
-            font-style: italic;
-            color: #a0522d;
-            margin-bottom: 30px;
+
+        /* Styling for EXPIRED HEADER */
+        .recipe-card.expired h1 {
+            color: #cc0000;
+            border-bottom-color: #cc0000;
+        }
+
+        .status-bar {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .status-active {
+            background-color: #d4edda; /* Light green */
+            color: #155724; /* Dark green text */
+        }
+
+        .status-expired {
+            background-color: #f8d7da; /* Light red */
+            color: #721c24; /* Dark red text */
         }
 
         /* Ingredient/Data List Styling */
@@ -52,19 +79,8 @@
             margin-top: 20px;
             border: 1px dashed #d4c098;
             padding: 20px;
-            background-color: #fffaf0; /* Slightly off-white for the list area */
+            background-color: #fffaf0;
             border-radius: 6px;
-        }
-        .ingredients-list li {
-            font-size: 1.1em;
-            padding: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px dotted #e0e0e0;
-        }
-        .ingredients-list li:last-child {
-            border-bottom: none;
         }
 
         /* Key and Value styling */
@@ -82,32 +98,27 @@
             color: #2f4f4f;
             word-break: break-all;
         }
-        
-        /* Footer/Note */
-        .footer-note {
-            margin-top: 30px;
-            font-size: 0.85em;
-            color: #a9a9a9;
-        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="recipe-card">
-        <h1>🍽️ Session Recipe: "The Cookie Batch"</h1>
-        <p class="subtitle">The required ingredients for your perfect browsing session.</p>
+    <div id="recipeCard" class="recipe-card">
+        <h1 id="mainTitle">🔐 Validated Session Data</h1>
+        
+        <div id="statusBar" class="status-bar">
+            </div>
 
         <ul id="cookieDisplay" class="ingredients-list">
-            <li>Checking the pantry...</li>
+            <li>Loading session details...</li>
         </ul>
-
-        <div class="footer-note">
-            * This page sets and reads temporary, client-side session data using JavaScript.
-        </div>
     </div>
 
     <script>
+        const EXPIRATION_MINUTES = 5;
+        const EXPIRATION_TIME_MS = EXPIRATION_MINUTES * 60 * 1000;
+        let sessionTimer = null; // To store the ID of the interval timer
+
         // --- Utility Function to get a specific cookie value ---
         function getCookie(name) {
             const nameEQ = encodeURIComponent(name) + "=";
@@ -119,17 +130,79 @@
                     return decodeURIComponent(c.substring(nameEQ.length, c.length));
                 }
             }
-            return '<span style="color: red; font-weight: normal;">Missing Ingredient!</span>';
+            return null; // Return null if not found
         }
 
-        
-        // --- Main function to read and update the display ---
-        function readAndDisplayCookies() {
-            const userName = getCookie('user_name');
-            const sessionId = getCookie('session_data'); // Using a more generic name
-
-            const displayElement = document.getElementById('cookieDisplay');
+        // --- Function to set sample cookies with a validation timestamp ---
+        function setSampleCookies() {
+            const expiryTimestamp = new Date().getTime() + EXPIRATION_TIME_MS;
             
+            // Set session data cookies (user name and ID)
+            document.cookie = `user_name=Chef_Gordon; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
+            document.cookie = `session_data=Batch_ID-7734552210; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
+            
+            // Set the validation cookie (timestamp in ms)
+            // Note: This max-age is set so the cookie expires naturally when the session validation fails.
+            document.cookie = `session_expiry=${expiryTimestamp}; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
+        }
+        
+        // --- Expiration Handler ---
+        function handleExpiration() {
+            // Stop the continuous interval check
+            clearInterval(sessionTimer); 
+
+            const card = document.getElementById('recipeCard');
+            const title = document.getElementById('mainTitle');
+            const status = document.getElementById('statusBar');
+            const display = document.getElementById('cookieDisplay');
+
+            // Visually update the card
+            card.classList.add('expired');
+            status.className = 'status-bar status-expired';
+
+            // Change the content
+            title.innerHTML = "🛑 SESSION EXPIRED";
+            status.innerHTML = "Security Timeout: Your session has ended.";
+            
+            display.innerHTML = `
+                <li style="justify-content: center; color: #cc0000; font-weight: bold; font-size: 1.2em;">
+                    SESSION INVALIDATED. Please reload to begin a new session.
+                </li>
+            `;
+
+            // Clear the cookies explicitly (optional but secure)
+            document.cookie = "user_name=; max-age=0; path=/";
+            document.cookie = "session_data=; max-age=0; path=/";
+            document.cookie = "session_expiry=; max-age=0; path=/";
+        }
+
+        // --- Core Validation and Display Function ---
+        function validateAndDisplaySession() {
+            const expiryTime = parseInt(getCookie('session_expiry'));
+            const currentTime = new Date().getTime();
+            const timeRemaining = expiryTime - currentTime;
+            
+            const userName = getCookie('user_name');
+            const sessionId = getCookie('session_data');
+            
+            // Check if time has run out OR if required cookies are missing
+            if (timeRemaining <= 0 || !expiryTime || !userName || !sessionId) {
+                handleExpiration();
+                return;
+            }
+
+            // --- Format Remaining Time ---
+            const minutes = Math.floor(timeRemaining / 60000);
+            const seconds = Math.floor((timeRemaining % 60000) / 1000);
+            const timeString = `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+
+            // --- Update Status Bar (Active) ---
+            const status = document.getElementById('statusBar');
+            status.className = 'status-bar status-active';
+            status.innerHTML = `✅ Session Active | Remaining: <strong>${timeString}</strong>`;
+
+            // --- Update Data Display ---
+            const displayElement = document.getElementById('cookieDisplay');
             displayElement.innerHTML = `
                 <li>
                     <span class="ingredient-key">User Name:</span> 
@@ -141,12 +214,18 @@
                 </li>
             `;
         }
-        
-        // --- Execution ---
-      
 
-        // 2. Read and display the newly set cookies
-        readAndDisplayCookies();
+        // --- Execution Flow ---
+        
+        // 1. If 'session_expiry' cookie is not found, set all cookies (start a new session)
+        if (!getCookie('session_expiry')) {
+            setSampleCookies();
+        }
+
+        // 2. Run validation check immediately and set the continuous timer (every 1 second)
+        validateAndDisplaySession();
+        sessionTimer = setInterval(validateAndDisplaySession, 1000);
+
     </script>
 
 </body>
