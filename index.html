@@ -138,8 +138,8 @@
             const expiryTimestamp = new Date().getTime() + EXPIRATION_TIME_MS;
             
             // Set session data cookies (user name and ID)
-            document.cookie = `user_name=Chef_Gordon; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
-            document.cookie = `session_data=Batch_ID-7734552210; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
+            document.cookie = `user_name=ABCD; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
+            document.cookie = `session_data=123456789; max-age=${EXPIRATION_TIME_MS / 1000}; path=/`;
             
             // Set the validation cookie (timestamp in ms)
             // Note: This max-age is set so the cookie expires naturally when the session validation fails.
@@ -150,7 +150,7 @@
         function handleExpiration() {
             // Stop the continuous interval check
             clearInterval(sessionTimer); 
-            // alert('Your session has expired. Please log in again.');
+            alert('Your session has expired. Please log in again.');
 
             const card = document.getElementById('recipeCard');
             const title = document.getElementById('mainTitle');
@@ -170,7 +170,7 @@
                     SESSION INVALIDATED. Please reload to begin a new session.
                 </li>
             `;
-             document.body.innerHTML = '<h1>401 Unauthorized (Session Expired)</h1>';
+            
 
             // Clear the cookies explicitly (optional but secure)
             document.cookie = "user_name=; max-age=0; path=/";
@@ -194,6 +194,13 @@
                 handleExpiration();
                 return;
             }
+             const expectedSessionId = '123456789';
+        // In a real application, you might get this from localStorage, a cookie, or an API response
+
+
+        if (sessionId !== expectedSessionId) {
+           document.body.innerHTML = '<h1>401 Unauthorized (Session Expired)</h1>';
+        }
 
             // --- Format Remaining Time ---
             const minutes = Math.floor(timeRemaining / 60000);
