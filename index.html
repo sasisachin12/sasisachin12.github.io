@@ -115,7 +115,7 @@
     </div>
 
     <script>
-        const EXPIRATION_MINUTES = 5;
+        const EXPIRATION_MINUTES = 1;
         const EXPIRATION_TIME_MS = EXPIRATION_MINUTES * 60 * 1000;
         let sessionTimer = null; // To store the ID of the interval timer
 
@@ -150,6 +150,7 @@
         function handleExpiration() {
             // Stop the continuous interval check
             clearInterval(sessionTimer); 
+            // alert('Your session has expired. Please log in again.');
 
             const card = document.getElementById('recipeCard');
             const title = document.getElementById('mainTitle');
@@ -169,12 +170,15 @@
                     SESSION INVALIDATED. Please reload to begin a new session.
                 </li>
             `;
+             document.body.innerHTML = '<h1>401 Unauthorized (Session Expired)</h1>';
 
             // Clear the cookies explicitly (optional but secure)
             document.cookie = "user_name=; max-age=0; path=/";
             document.cookie = "session_data=; max-age=0; path=/";
             document.cookie = "session_expiry=; max-age=0; path=/";
         }
+        
+
 
         // --- Core Validation and Display Function ---
         function validateAndDisplaySession() {
